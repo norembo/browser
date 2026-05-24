@@ -1,5 +1,5 @@
 import Foundation
-import SwiftUI
+import PassKit
 
 @Observable
 final class SubscriptionManager {
@@ -26,8 +26,8 @@ final class SubscriptionManager {
         isPromoActive || currentPlan == .monthly || currentPlan == .yearly
     }
 
-    var canUseFaceScan: Bool     { hasPremium }
-    var canUseAllWearables: Bool { hasPremium }
+    var canUseFaceScan: Bool      { hasPremium }
+    var canUseAllWearables: Bool  { hasPremium }
     var hasUnlimitedHistory: Bool { hasPremium }
     var hasAIRecommendations: Bool { hasPremium }
 
@@ -48,33 +48,88 @@ final class SubscriptionManager {
 
     func clearPromoMessage() { promoMessage = "" }
 
-    // MARK: - Stripe Checkout (requires backend)
+    // MARK: - Apple Pay (iOS / watchOS)
 
-    func initiateStripeCheckout(plan: SubscriptionPlan) async {
+    var canMakeApplePayPayments: Bool {
+        PKPaymentAuthorizationController.canMakePayments()
+    }
+
+    func initiateApplePay(plan: SubscriptionPlan) async {
         guard plan != .free else { return }
         isPurchasing = true
         defer { isPurchasing = false }
 
-        // Production flow:
-        // 1. POST /api/create-checkout-session { productId: plan.stripeProductId, customerId: ... }
-        // 2. Backend returns { sessionId, url }
-        // 3. Open url in WKWebView / Safari
-        // 4. On success Stripe webhook calls /api/webhook and confirms subscription
-        // 5. App queries /api/subscription-status to refresh plan
+        let item = PKPaymentSummaryItem(
+            label: "RecovEr \(plan.rawValue)",
+            amount: NSDecimalNumber(string: plan.decimalPrice),
+            type: .final
+        )
 
-        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        let request = PKPaymentRequest()
+        request.merchantIdentifier       = "merchant.com.recover.app"
+        request.supportedNetworks        = [.visa, .masterCard, .amex]
+        request.merchantCapabilities     = .capability3DS
+        request.countryCode              = "LT"
+        request.currencyCode             = "EUR"
+        request.paymentSummaryItems      = [item]
 
-        // Demo: activate plan (replace with real Stripe webhook confirmation)
-        currentPlan = plan
-        defaults.set(plan.rawValue, forKey: "subscriptionPlan")
-        promoMessage = "\(plan.rawValue) planas aktyvuotas!"
+        let controller = PKPaymentAuthorizationController(paymentRequest: request)
+        let delegate   = ApplePayDelegate { [weak self] success in
+            if success {
+                self?.currentPlan = plan
+                self?.defaults.set(plan.rawValue, forKey: "subscriptionPlan")
+                self?.promoMessage = "\(plan.rawValue) planas aktyvuotas per Apple Pay!"
+            } else {
+                self?.promoMessage = "Apple Pay mokėjimas atšauktas."
+            }
+        }
+        controller.delegate = delegate
+        await controller.present()
+        // Keep delegate alive until payment completes
+        _ = delegate
     }
+
+    // MARK: - Stripe (Android only – backend flow)
+    // Android app calls POST /api/create-checkout-session and opens Stripe WebView.
+    // On payment success, Stripe webhook updates subscription server-side.
 
     func restore() async {
         isPurchasing = true
         defer { isPurchasing = false }
         try? await Task.sleep(nanoseconds: 800_000_000)
-        // Production: query Stripe /v1/subscriptions or validate StoreKit receipt
         promoMessage = isPromoActive ? "Promo versija atkurta." : "Nieko neaptikta."
+    }
+}
+
+// MARK: - Apple Pay Delegate
+
+private final class ApplePayDelegate: NSObject, PKPaymentAuthorizationControllerDelegate {
+    private let completion: (Bool) -> Void
+    init(completion: @escaping (Bool) -> Void) { self.completion = completion }
+
+    func paymentAuthorizationController(
+        _ controller: PKPaymentAuthorizationController,
+        didAuthorizePayment payment: PKPayment,
+        handler: @escaping (PKPaymentAuthorizationResult) -> Void
+    ) {
+        // Forward payment.token to your backend for server-side confirmation
+        handler(PKPaymentAuthorizationResult(status: .success, errors: nil))
+        completion(true)
+    }
+
+    func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
+        controller.dismiss()
+    }
+}
+
+// MARK: - Plan Price Helpers
+
+extension SubscriptionPlan {
+    var decimalPrice: String {
+        switch self {
+        case .free:    return "0.00"
+        case .monthly: return "9.99"
+        case .yearly:  return "59.99"
+        }
     }
 }

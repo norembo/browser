@@ -15,7 +15,7 @@ struct SubscriptionView: View {
                 } else {
                     statusCard
                     planPicker
-                    subscribeButton
+                    applePayButton
                     promoSection
                     restoreButton
                 }
@@ -24,7 +24,7 @@ struct SubscriptionView: View {
                     messageCard
                 }
 
-                stripeInfoCard
+                paymentInfoCard
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
@@ -54,7 +54,7 @@ struct SubscriptionView: View {
                 featureRow("Visos apyrankės: Garmin, Huawei, Fitbit…")
                 featureRow("Neribota istorija")
                 featureRow("AI atsigavimo rekomendacijos")
-                featureRow("Stripe mokėjimų sistema")
+                featureRow("Apple Pay mokėjimai")
                 featureRow("Eksportas į PDF")
             }
         }
@@ -131,29 +131,46 @@ struct SubscriptionView: View {
         }
     }
 
-    // MARK: - Subscribe Button
+    // MARK: - Apple Pay Button
 
-    private var subscribeButton: some View {
-        Button {
-            Task { await subscription.initiateStripeCheckout(plan: selectedPlan) }
-        } label: {
-            if subscription.isPurchasing {
-                HStack(spacing: 6) {
-                    ProgressView().tint(.white)
-                    Text("Jungiamasi prie Stripe…")
+    @ViewBuilder
+    private var applePayButton: some View {
+        if subscription.canMakeApplePayPayments {
+            Button {
+                Task { await subscription.initiateApplePay(plan: selectedPlan) }
+            } label: {
+                if subscription.isPurchasing {
+                    HStack(spacing: 6) {
+                        ProgressView().tint(.white)
+                        Text("Apdorojama…")
+                    }
+                    .frame(maxWidth: .infinity)
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "apple.logo")
+                            .font(.footnote.weight(.semibold))
+                        Text("Pay")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 2)
                 }
-                .frame(maxWidth: .infinity)
-            } else {
-                HStack(spacing: 4) {
-                    Image(systemName: "creditcard.fill")
-                    Text("Mokėti \(selectedPlan.price) per Stripe")
-                }
-                .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.borderedProminent)
+            .tint(.black)
+            .disabled(subscription.isPurchasing)
+        } else {
+            HStack(spacing: 6) {
+                Image(systemName: "exclamationmark.circle")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+                Text("Apple Pay neprieinamas šiame įrenginyje.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(8)
+            .background(.thinMaterial)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(.blue)
-        .disabled(subscription.isPurchasing)
     }
 
     // MARK: - Promo Code
@@ -215,11 +232,12 @@ struct SubscriptionView: View {
     // MARK: - Message
 
     private var messageCard: some View {
-        HStack(spacing: 6) {
-            Image(systemName: subscription.promoMessage.contains("priimtas") || subscription.promoMessage.contains("aktyvuotas")
-                  ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundStyle(subscription.promoMessage.contains("priimtas") || subscription.promoMessage.contains("aktyvuotas")
-                                 ? .green : .red)
+        let isSuccess = subscription.promoMessage.contains("priimtas") ||
+                        subscription.promoMessage.contains("aktyvuotas") ||
+                        subscription.promoMessage.contains("atkurta")
+        return HStack(spacing: 6) {
+            Image(systemName: isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundStyle(isSuccess ? .green : .red)
             Text(subscription.promoMessage)
                 .font(.caption2)
             Spacer()
@@ -229,41 +247,53 @@ struct SubscriptionView: View {
         .onTapGesture { subscription.clearPromoMessage() }
     }
 
-    // MARK: - Stripe Info
+    // MARK: - Payment Info
 
-    private var stripeInfoCard: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Label("Stripe mokėjimai", systemImage: "lock.shield.fill")
+    private var paymentInfoCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Mokėjimo metodai", systemImage: "lock.shield.fill")
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
 
-            Text("Visi mokėjimai saugomi per Stripe – banko lygio šifravimas. Kortelės duomenų nesaugome. Atšaukti galima bet kada.")
-                .font(.system(size: 9))
-                .foregroundStyle(.secondary)
+            HStack(alignment: .top, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
+                    platformBadge(icon: "apple.logo", label: "iOS / watchOS", color: .primary)
+                    HStack(spacing: 4) {
+                        Image(systemName: "apple.logo").font(.system(size: 9))
+                        Text("Apple Pay")
+                            .font(.system(size: 9, weight: .semibold))
+                    }
+                    .foregroundStyle(.secondary)
+                }
 
-            HStack(spacing: 6) {
-                paymentBadge("Visa")
-                paymentBadge("Mastercard")
-                paymentBadge("Apple Pay")
-                paymentBadge("Google Pay")
+                Divider().frame(height: 36)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    platformBadge(icon: "smartphone", label: "Android", color: .green)
+                    Text("Stripe (Visa, MC,\nGoogle Pay)")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                }
             }
+
+            Text("Mokėjimo duomenys šifruojami Apple / Stripe saugumu. Atšaukti galima bet kada.")
+                .font(.system(size: 9))
+                .foregroundStyle(.tertiary)
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.thinMaterial)
     }
 
-    private func paymentBadge(_ name: String) -> some View {
-        Text(name)
-            .font(.system(size: 8, weight: .semibold))
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 3)
-            .background(
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.08))
-            )
+    private func platformBadge(icon: String, label: String, color: Color) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon).font(.system(size: 9))
+            Text(label).font(.system(size: 9, weight: .semibold))
+        }
+        .foregroundStyle(color)
     }
+
+    // MARK: - Helpers
 
     private func featureRow(_ text: String) -> some View {
         HStack(spacing: 6) {
