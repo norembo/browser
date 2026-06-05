@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Inter variable font from bunny.net CDN (GDPR-safe, no Google Fonts) ── */
+@import url('https://fonts.bunny.net/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-surface-900 text-slate-100;
+    font-family: 'Inter var', 'Inter', system-ui, sans-serif;
+  }
+
+  /* Scrollbar styling for code blocks */
+  pre::-webkit-scrollbar {
+    height: 4px;
+  }
+  pre::-webkit-scrollbar-track {
+    @apply bg-surface-900;
+  }
+  pre::-webkit-scrollbar-thumb {
+    @apply bg-surface-500 rounded-full;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
