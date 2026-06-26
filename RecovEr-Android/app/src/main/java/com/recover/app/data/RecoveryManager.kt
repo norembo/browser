@@ -152,7 +152,7 @@ class RecoveryManager(private val context: Context) {
             .addOnSuccessListener { faces ->
                 val face = faces.firstOrNull()
                 val eyeOpen = face?.let {
-                    (it.leftEyeOpenProbability ?: 0.5f + (it.rightEyeOpenProbability ?: 0.5f)) / 2
+                    ((it.leftEyeOpenProbability ?: 0.5f) + (it.rightEyeOpenProbability ?: 0.5f)) / 2
                 } ?: 0.7f
                 val smiling = face?.smilingProbability ?: 0.5f
 

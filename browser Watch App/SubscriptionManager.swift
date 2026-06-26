@@ -11,6 +11,7 @@ final class SubscriptionManager {
 
     private let promoCode = "Norembo"
     private let defaults  = UserDefaults.standard
+    private var activePayDelegate: ApplePayDelegate?
 
     init() {
         let savedPlan  = defaults.string(forKey: "subscriptionPlan") ?? SubscriptionPlan.free.rawValue
@@ -82,11 +83,11 @@ final class SubscriptionManager {
             } else {
                 self?.promoMessage = "Apple Pay mokėjimas atšauktas."
             }
+            self?.activePayDelegate = nil
         }
+        activePayDelegate  = delegate   // retain strongly until callback fires
         controller.delegate = delegate
         await controller.present()
-        // Keep delegate alive until payment completes
-        _ = delegate
     }
 
     // MARK: - Stripe (Android only – backend flow)

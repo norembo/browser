@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
 
     // Health Connect (Google Fit replacement)
@@ -64,6 +65,10 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    // OkHttp (Stripe backend calls)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
 
     // Permissions
     implementation(libs.accompanist.permissions)

@@ -28,6 +28,7 @@ import com.recover.app.ui.theme.AccentBlue
 import com.recover.app.ui.theme.TextSec
 import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetResult
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
         subscriptionManager: com.recover.app.data.SubscriptionManager,
         plan: SubscriptionPlan
     ) {
-        kotlinx.coroutines.MainScope().launch {
+        lifecycleScope.launch {
             val params = subscriptionManager.fetchStripeParams(plan) ?: return@launch
             paymentSheet.presentWithPaymentIntent(
                 paymentIntentClientSecret = params.clientSecret,

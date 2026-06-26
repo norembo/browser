@@ -12,6 +12,7 @@ mlkitFace           = "16.1.7"
 stripe              = "20.53.0"
 coroutines          = "1.8.1"
 accompanist         = "0.36.0"
+okhttp              = "4.12.0"
 
 [libraries]
 androidx-core-ktx                   = { group = "androidx.core",             name = "core-ktx",                         version.ref = "coreKtx" }
@@ -23,6 +24,7 @@ androidx-ui                         = { group = "androidx.compose.ui",       nam
 androidx-ui-graphics                = { group = "androidx.compose.ui",       name = "ui-graphics" }
 androidx-ui-tooling-preview         = { group = "androidx.compose.ui",       name = "ui-tooling-preview" }
 androidx-material3                  = { group = "androidx.compose.material3",name = "material3" }
+androidx-material-icons-extended    = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-navigation-compose         = { group = "androidx.navigation",       name = "navigation-compose",               version.ref = "navigationCompose" }
 androidx-health-connect             = { group = "androidx.health.connect",   name = "connect-client",                   version.ref = "healthConnect" }
 androidx-camera-core                = { group = "androidx.camera",           name = "camera-core",                      version.ref = "cameraX" }
@@ -33,6 +35,8 @@ mlkit-face-detection                = { group = "com.google.mlkit",          nam
 stripe-android                      = { group = "com.stripe",                name = "stripe-android",                   version.ref = "stripe" }
 kotlinx-coroutines-android          = { group = "org.jetbrains.kotlinx",     name = "kotlinx-coroutines-android",       version.ref = "coroutines" }
 accompanist-permissions             = { group = "com.google.accompanist",    name = "accompanist-permissions",          version.ref = "accompanist" }
+okhttp                              = { group = "com.squareup.okhttp3",      name = "okhttp",                           version.ref = "okhttp" }
+okhttp-logging                      = { group = "com.squareup.okhttp3",      name = "logging-interceptor",              version.ref = "okhttp" }
 androidx-ui-tooling                 = { group = "androidx.compose.ui",       name = "ui-tooling" }
 
 [plugins]
