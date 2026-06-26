@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose app: XML theme only sets window background before Compose draws -->
+    <style name="Theme.RecovEr" parent="android:Theme.Material.Light.NoTitleBar">
+        <item name="android:windowBackground">@color/navy_dark</item>
+        <item name="android:statusBarColor">@color/navy_dark</item>
+        <item name="android:navigationBarColor">@color/navy_dark</item>
+    </style>
+</resources>

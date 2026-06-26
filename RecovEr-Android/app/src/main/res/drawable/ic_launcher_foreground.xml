@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Heart pulse icon for RecovEr -->
+    <path
+        android:fillColor="#FF3B82F6"
+        android:pathData="M54,36 C54,36 44,26 36,30 C28,34 28,46 36,52 L54,70 L72,52 C80,46 80,34 72,30 C64,26 54,36 54,36Z" />
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M26,54 L36,54 L42,44 L50,66 L58,48 L64,54 L82,54"
+        android:fillColor="@android:color/transparent" />
+</vector>

@@ -1,0 +1,33 @@
+# Xcode / iOS / watchOS
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.xcarchive
+.DS_Store
+*.swp
+*.lock
+
+# Android
+RecovEr-Android/.gradle/
+RecovEr-Android/build/
+RecovEr-Android/app/build/
+RecovEr-Android/local.properties
+RecovEr-Android/*.iml
+RecovEr-Android/.idea/
+RecovEr-Android/captures/
+RecovEr-Android/.externalNativeBuild/
+RecovEr-Android/.cxx/
+
+# Node / Backend
+backend/node_modules/
+backend/.env
+backend/*.log
+backend/npm-debug.log*
+
+# General
+.env
+*.log
